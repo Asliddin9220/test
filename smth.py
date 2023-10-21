@@ -1,85 +1,124 @@
-class Beverage:
-    def __init__(self, name, price):
+class Driver:
+    def __init__(self, name):
         self.name = name
-        self.price = price
+        self.races = []
 
-class VendingMachine:
+    def getName(self):
+        return self.name
+
+    def addRace(self, race):
+        self.races.append(race)
+
+    def getPoints(self):
+        points = 0
+        for race in self.races:
+            position = race.getPosition(self)
+            if position <= 10:
+                points += [25, 18, 15, 12, 10, 8, 6, 4, 2, 1][position - 1]
+        return points
+
+
+class GrandPrix:
+    def __init__(self, name):
+        self.name = name
+        self.races = []
+
+    def getName(self):
+        return self.name
+
+    def addRace(self, race):
+        self.races.append(race)
+
+    def getGPRanking(self):
+        ranking = sorted(self.races, key=lambda x: x.time)
+        return ranking
+
+
+class Race:
+    def __init__(self, grand_prix, driver, time):
+        self.grand_prix = grand_prix
+        self.driver = driver
+        self.time = time
+
+    def getPosition(self, driver):
+        ranking = self.grand_prix.getGPRanking()
+        for i in range(len(ranking)):
+            if ranking[i].driver == driver:
+                return i + 1
+        return -1
+
+
+class Championship:
     def __init__(self):
-        self.beverages = []
-        self.cards = []
-        self.columns = []
+        self.drivers = []
+        self.grand_prixs = []
 
-    def addBeverage(self, name, price):
-        beverage = Beverage(name, price)
-        self.beverages.append(beverage)
+    def createDriver(self, name):
+        driver = Driver(name)
+        self.drivers.append(driver)
+        return driver
 
-    def getPrice(self, name):
-        for beverage in self.beverages:
-            if beverage.name == name:
-                return beverage.price
-        return -1.0
+    def getDrivers(self):
+        return self.drivers
 
-    def rechargeCard(self, card_id, credit):
-        for card in self.cards:
-            if card.card_id == card_id:
-                card.credit += credit
-                return
-        new_card = Card(card_id, credit)
-        self.cards.append(new_card)
+    def getDriver(self, name):
+        for driver in self.drivers:
+            if driver.getName() == name:
+                return driver
+        return None
 
-    def getCredit(self, card_id):
-        for card in self.cards:
-            if card.card_id == card_id:
-                return card.credit
-        return -1.0
+    def defineGrandPrix(self, name):
+        grand_prix = GrandPrix(name)
+        self.grand_prixs.append(grand_prix)
+        return grand_prix
 
-    def refillColumn(self, column_number, name, quantity):
-        column = Column(column_number, name, quantity)
-        self.columns.append(column)
+    def getGrandPrix(self, name):
+        for grand_prix in self.grand_prixs:
+            if grand_prix.getName() == name:
+                return grand_prix
+        return None
 
-    def availableCans(self, name):
-        count = 0
-        for column in self.columns:
-            if column.name == name:
-                count += column.quantity
-        return count
+    def getChampionshipRanking(self):
+        ranking = sorted(self.drivers, key=lambda x: x.getPoints(), reverse=True)
+        return ranking
 
 
-class Card:
-    def __init__(self, card_id, credit):
-       self.card_id = card_id
-       self.credit = credit
+class Time:
+    def __init__(self, gp, driver, hours, minutes, seconds, ms):
+        self.gp = gp
+        self.driver = driver
+        self.hours = hours
+        self.minutes = minutes
+        self.seconds = seconds
+        self.ms = ms
 
-
-class Column:
-    def __init__(self, number, name ,quantity):
-       self.number = number
-       self.name = name
-       self.quantity = quantity
+    def toString(self):
+        return f"{self.hours}:{self.minutes}:{self.seconds}.{self.ms}"
 
 
 
-
-vending_machine = VendingMachine()
-
-
-vending_machine.addBeverage("Coca Cola", 3200)
-vending_machine.addBeverage("Suv", 1000)
-vending_machine.addBeverage("Pepsi", 2500)
+championship = Championship()
 
 
-print(vending_machine.getPrice("Coca Cola")) 
+driver1 = championship.createDriver("Cristiano Ronaldo")
+driver2 = championship.createDriver("Lionel Messi")
 
 
-vending_machine.rechargeCard(12, 12000)
+gp1 = championship.defineGrandPrix("Bahrain Grand Prix")
+gp2 = championship.defineGrandPrix("Spanish Grand Prix")
 
 
-print(vending_machine.getCredit(12)) 
+race1 = Race(gp1, driver1, Time(gp1, driver1, 1, 30, 12, 500))
+race2 = Race(gp1, driver2, Time(gp1, driver2, 1, 31, 15, 200))
+race3 = Race(gp2, driver1, Time(gp2, driver1, 1, 28, 45, 800))
+race4 = Race(gp2, driver2, Time(gp2, driver2, 1, 29, 30, 600))
 
-vending_machine.refillColumn(1, "Coca Cola", 1)
-vending_machine.refillColumn(2, "Suv", 10)
-vending_machine.refillColumn(3, "Pepsi", 15)
-vending_machine.refillColumn(4, "Suv", 20)
+gp1.addRace(race1)
+gp1.addRace(race2)
+gp2.addRace(race3)
+gp2.addRace(race4)
 
 
-print(vending_machine.availableCans("Suv")) 
+ranking = championship.getChampionshipRanking()
+for i, driver in enumerate(ranking):
+    print(f"{i+1}. {driver.getName()}: {driver.getPoints()} points")
