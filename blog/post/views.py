@@ -3,5 +3,7 @@ from .models import Post
 
 def post_list(request):
     posts = Post.objects.all()
-    return render(request, 'post/post_list.html', {'posts': posts})
+    for post in posts:
+        print(post.image)
+    return render(request,'post_list.html', {'posts':posts})
 # Create your views here.
